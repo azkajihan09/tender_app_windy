@@ -3,7 +3,7 @@ import 'package:tender_app_windy/src/common_widgets/custom_button_widget.dart';
 import 'package:tender_app_windy/src/common_widgets/custom_text_button_widget.dart';
 import 'package:tender_app_windy/src/common_widgets/logo_and_tagline_widget.dart';
 import 'package:tender_app_windy/src/common_widgets/upload_photo_widgte.dart';
-import 'package:tender_app_windy/src/features/likes_you/explore_people_screen.dart';
+import 'package:tender_app_windy/src/features/likes_you/presentation/explore_people_screen.dart';
 import 'package:tender_app_windy/src/theme_manager/font_manager.dart';
 import 'package:tender_app_windy/src/theme_manager/style_manager.dart';
 import 'package:tender_app_windy/src/theme_manager/values_manager.dart';
