@@ -27,7 +27,9 @@ def temp_env(**kwargs: object):
                 os.environ[k] = v
 
 
-def validate_args(validator: Callable[..., bool]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+def validate_args(
+    validator: Callable[..., bool],
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator factory to validate arguments before running function.
     Validator should return True for valid args or False otherwise.
@@ -67,10 +69,13 @@ def sanitize_filename(filename: str) -> str:
     Useful for preventing path traversal attacks.
     """
     import re
-    # Remove path separators and other dangerous chars
-    sanitized = re.sub(r'[<>:"/\\|?*]', '_', filename)
+
+    # Remove path separators and other dangerous chars, but allow dots for file extensions
+    sanitized = re.sub(r'[<>:"/\\|?*]', "_", filename)
+    # Remove path traversal attempts (.. patterns)
+    sanitized = re.sub(r"\.\.+", "_", sanitized)
     # Remove leading/trailing dots and spaces
-    sanitized = sanitized.strip('. ')
+    sanitized = sanitized.strip(". ")
     # Prevent empty filename
     if not sanitized:
         sanitized = "unnamed"
@@ -82,4 +87,5 @@ def secure_compare(a: str, b: str) -> bool:
     Time-constant string comparison to prevent timing attacks.
     """
     import hmac
+
     return hmac.compare_digest(a, b)
