@@ -1,0 +1,140 @@
+name: SecureKit CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+
+    - name: Code formatting check (Black)
+      run: |
+        black --check --diff .
+
+    - name: Linting (Flake8)
+      run: |
+        flake8 src tests
+
+    - name: Type checking (MyPy)
+      run: |
+        mypy src
+
+    - name: Run tests with coverage
+      run: |
+        pytest --cov=src --cov-report=xml --cov-report=html --cov-report=term-missing
+
+    - name: Security scan (Bandit)
+      run: |
+        bandit -r src -f json -o bandit-report.json
+        bandit -r src --severity-level medium
+
+    - name: Dependency vulnerability scan (pip-audit)
+      run: |
+        pip-audit --format=json --output=pip-audit-report.json
+        pip-audit --desc --format=columns
+
+    - name: Check security reports
+      run: |
+        # Check bandit report for HIGH/CRITICAL findings
+        if [ -f bandit-report.json ]; then
+          HIGH_CRITICAL=$(python -c "
+import json
+with open('bandit-report.json') as f:
+    data = json.load(f)
+    high_critical = [r for r in data.get('results', []) if r.get('issue_severity') in ['HIGH', 'CRITICAL']]
+    print(len(high_critical))
+exit(len(high_critical))
+          ")
+          if [ $HIGH_CRITICAL -gt 0 ]; then
+            echo "❌ Found $HIGH_CRITICAL HIGH/CRITICAL security issues in bandit scan"
+            exit 1
+          else
+            echo "✅ No HIGH/CRITICAL security issues found in bandit scan"
+          fi
+        fi
+        
+        # Check pip-audit report for vulnerabilities
+        if [ -f pip-audit-report.json ]; then
+          VULNS=$(python -c "
+import json
+with open('pip-audit-report.json') as f:
+    data = json.load(f)
+    vulns = len(data.get('vulnerabilities', []))
+    print(vulns)
+exit(vulns)
+          ")
+          if [ $VULNS -gt 0 ]; then
+            echo "❌ Found $VULNS vulnerabilities in pip-audit scan"
+            exit 1
+          else
+            echo "✅ No vulnerabilities found in pip-audit scan"
+          fi
+        fi
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-reports-${{ matrix.python-version }}
+        path: |
+          bandit-report.json
+          pip-audit-report.json
+          htmlcov/
+
+  lint-and-format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black flake8 mypy
+
+    - name: Check if code is formatted
+      run: |
+        black --check .
+
+    - name: Lint with flake8
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
