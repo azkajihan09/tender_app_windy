@@ -1,17 +1,44 @@
-# tender_app_windy
+# SecureKit — Python Secure Coding Skeleton
 
-A new Flutter project.
+Ringkasan
+- Skeleton project untuk latihan Python lanjutan dan pola secure coding (Minggu 1-2).
+- Berisi: utilities aman, HTTP client (sync & async) dengan pola dependency injection, pydantic config, unit tests, dan CI workflow.
 
-## Getting Started
+Tujuan
+- Praktik safe subprocess, temporary env context, validated input decorator.
+- Implementasi HTTP client yang aman (TLS verify, timeouts, retries) dengan testable API.
+- CI: formatting, linting, typing, unit tests, and security scans.
 
-This project is a starting point for a Flutter application.
+Quick start
+1. Buat virtualenv dan aktifkan:
+   python -m venv venv
+   source venv/bin/activate  # Linux/macOS
+   .\venv\Scripts\Activate   # Windows
 
-A few resources to get you started if this is your first Flutter project:
+2. Install dependencies:
+   pip install -r requirements-dev.txt
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+3. Jalankan format/lint/test:
+   black .
+   flake8
+   mypy src
+   pytest -q
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# tender
+4. Jalankan security scans (opsional):
+   bandit -r src
+   pip-audit
+
+Struktur penting
+- src/securekit: package utama
+  - utils.py: safe subprocess, temp_env, decorators
+  - http_client.py: sync/async HTTP client with DI
+  - config.py: pydantic settings model
+- tests/: pytest tests
+- .github/workflows/ci.yml: CI workflow
+- requirements-dev.txt: dev dependencies
+
+Catatan keamanan & etika
+- Jangan memasukkan secrets di repo. Gunakan env vars / secret store.
+- Semua contoh network di sini menggunakan dependency injection / mock transport untuk testing — tidak mengakses jaringan nyata saat test berjalan.
+
+Selamat belajar — mulai dari mengulas file `src/securekit/*` dan jalankan `pytest` untuk melihat contoh tests berjalan.

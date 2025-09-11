@@ -42,3 +42,18 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Byte-compiled / virtualenv
+__pycache__/
+*.py[cod]
+venv/
+.env
+.env.*.local
+
+# Editor
+.vscode/
+.idea/
+
+# Pytest
+.coverage
+htmlcov/
