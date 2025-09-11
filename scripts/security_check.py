@@ -121,13 +121,15 @@ def run_safety_checks() -> bool:
                 if pattern in line:
                     # Skip comments, docstrings, and string literals
                     stripped_line = line.strip()
-                    if (stripped_line.startswith('#') or 
-                        stripped_line.startswith('"""') or
-                        stripped_line.startswith("'''") or
-                        '"""' in line or 
-                        "'''" in line):
+                    if (
+                        stripped_line.startswith("#")
+                        or stripped_line.startswith('"""')
+                        or stripped_line.startswith("'''")
+                        or '"""' in line
+                        or "'''" in line
+                    ):
                         continue
-                        
+
                     issues.append(f"{py_file}:{i} - {message}")
                     break
 
